@@ -52,18 +52,33 @@ test.describe('Retry flow', () => {
     const retryBtn = page.getByTestId('retry-btn');
     await expect(retryBtn).toBeVisible({ timeout: 10_000 });
 
+    // Start listening for the retry response BEFORE clicking so we don't miss it.
+    const retryResponsePromise = page.waitForResponse(
+      (resp) => resp.url().includes('/retry') && resp.request().method() === 'POST',
+      { timeout: 20_000 }
+    );
+
     await retryBtn.click();
 
-    // Wait for the status badge to change away from 'firmado'.
-    // Acceptable end states: enviado or aceptado (fake DGII returns trackId on send;
-    // full acceptance requires the cron poller).
-    const badge = page.getByTestId('status-badge');
+    // Wait for the retry API call to finish before polling.
+    // Without this, page.reload() cancels the in-flight fetch, preventing the
+    // server from completing the state transition to 'enviado'.
+    const retryResponse = await retryResponsePromise;
+
+    // Assert the retry API responded successfully so we get a clear failure message
+    // if the server-side pipeline errored (cert missing, DGII unreachable, etc.)
+    const retryStatus = retryResponse.status();
+    const retryBody = await retryResponse.text();
+    expect(retryStatus, `Retry API failed (${retryStatus}): ${retryBody}`).toBe(200);
+
+    // The handleRetry() in the page already calls fetchInvoice() after the API
+    // response, so the badge should be updated on the current page.  We still
+    // reload a couple of times in case of any React state lag.
     await expect(async () => {
-      // Reload to get updated state from the server
       await page.reload();
       const estado = await page.getByTestId('status-badge').getAttribute('data-estado');
       expect(['enviado', 'aceptado']).toContain(estado);
-    }).toPass({ timeout: 30_000, intervals: [2_000, 3_000] });
+    }).toPass({ timeout: 15_000, intervals: [1_000, 2_000] });
   });
 
   test('audit log is populated after retry', async ({ page }) => {
@@ -71,9 +86,17 @@ test.describe('Retry flow', () => {
 
     const retryBtn = page.getByTestId('retry-btn');
     await expect(retryBtn).toBeVisible({ timeout: 10_000 });
-    await retryBtn.click();
 
-    // Reload to get fresh audit log
+    // Same timing fix: wait for the retry response before reloading.
+    const retryResponsePromise = page.waitForResponse(
+      (resp) => resp.url().includes('/retry') && resp.request().method() === 'POST',
+      { timeout: 20_000 }
+    );
+
+    await retryBtn.click();
+    await retryResponsePromise;
+
+    // Reload to get fresh audit log from the server.
     await page.reload();
     await expect(page.getByTestId('audit-log')).toBeVisible({ timeout: 10_000 });
     // At least one audit entry should be present

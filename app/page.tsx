@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Invoice } from '@/lib/db/invoices';
 import InvoiceStatusBadge from '@/components/InvoiceStatusBadge';
@@ -14,7 +14,17 @@ export default function Dashboard() {
   const [estadoFilter, setEstadoFilter] = useState<EstadoFilter>('');
   const [refreshing, setRefreshing] = useState(false);
 
+  // AbortController ref to cancel in-flight requests when a new one starts
+  const abortRef = useRef<AbortController | null>(null);
+
   const fetchInvoices = async (estado?: string) => {
+    // Cancel any previous in-flight request
+    if (abortRef.current) {
+      abortRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
       setLoading(true);
       setError(null);
@@ -22,13 +32,19 @@ export default function Dashboard() {
       if (estado && estado !== '') {
         params.append('estado', estado);
       }
-      const response = await fetch(`/api/invoices?${params.toString()}`);
+      const response = await fetch(`/api/invoices?${params.toString()}`, {
+        signal: controller.signal,
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch invoices');
       }
       const data = await response.json();
       setInvoices(data);
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        // Cancelled — a newer request is in flight; ignore
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Error fetching invoices');
     } finally {
       setLoading(false);
@@ -37,6 +53,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchInvoices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleEstadoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

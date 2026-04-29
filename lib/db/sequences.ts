@@ -39,12 +39,16 @@ export async function getActiveSequences(companyId?: string): Promise<NCFSequenc
   try {
     let query = supabaseAdminClient
       .from('ncf_sequences')
-      .select('*')
-      .eq('estado', 'activo');
+      .select('*');
 
     if (companyId) {
       query = query.eq('company_id', companyId);
     }
+
+    // Return all sequences (active + expired) ordered by creation date so the
+    // UI can show history.  Callers that only care about active ones should
+    // filter on the returned array.
+    query = query.order('created_at', { ascending: false });
 
     const { data, error } = await query;
 
@@ -54,28 +58,25 @@ export async function getActiveSequences(companyId?: string): Promise<NCFSequenc
 
     return (data as NCFSequence[]) || [];
   } catch (error) {
-    console.error('Error fetching active sequences:', error);
+    console.error('Error fetching sequences:', error);
     throw error;
   }
 }
 
 export async function upsertSequence(seq: Partial<NCFSequence>): Promise<void> {
   try {
-    const { error } = await supabaseAdminClient.from('ncf_sequences').upsert(
-      {
-        ...seq,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: 'company_id,tipo_ecf',
-      }
-    );
+    // Multiple sequences per (company_id, tipo_ecf) are allowed — just INSERT.
+    // The caller is responsible for deactivating previous sequences when needed.
+    const { error } = await supabaseAdminClient.from('ncf_sequences').insert({
+      ...seq,
+      updated_at: new Date().toISOString(),
+    });
 
     if (error) {
       throw error;
     }
   } catch (error) {
-    console.error('Error upserting sequence:', error);
+    console.error('Error inserting sequence:', error);
     throw error;
   }
 }
@@ -174,12 +175,16 @@ export async function getSequenceByCompanyAndType(
   tipoECF: number = 31
 ): Promise<NCFSequence | null> {
   try {
+    // There may be multiple sequences per (company, tipo_ecf); pick the active one.
     const { data, error } = await supabaseAdminClient
       .from('ncf_sequences')
       .select('*')
       .eq('company_id', companyId)
       .eq('tipo_ecf', tipoECF)
-      .single();
+      .eq('estado', 'activo')
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
 
     if (error) {
       if (error.code === 'PGRST116') {
@@ -188,7 +193,7 @@ export async function getSequenceByCompanyAndType(
       throw error;
     }
 
-    return data as NCFSequence;
+    return data as NCFSequence | null;
   } catch (error) {
     console.error('Error fetching sequence:', error);
     throw error;

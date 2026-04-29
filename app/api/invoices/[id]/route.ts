@@ -3,6 +3,11 @@ import { getInvoice } from '@/lib/db/invoices';
 import { getInvoiceAuditLog } from '@/lib/db/audit';
 import { getInvoiceLines } from '@/lib/db/invoiceLines';
 
+// Always fetch fresh data — disable Next.js Data Cache for all fetch() calls
+// (including internal Supabase HTTP requests) within this route handler.
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -26,11 +31,10 @@ export async function GET(
       }),
     ]);
 
-    return NextResponse.json({
-      invoice,
-      lines,
-      auditLog,
-    });
+    return NextResponse.json(
+      { invoice, lines, auditLog },
+      { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } }
+    );
   } catch (error) {
     console.error('Error in GET /api/invoices/[id]:', error);
     return NextResponse.json(

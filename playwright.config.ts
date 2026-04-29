@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config as loadEnv } from 'dotenv';
+
+// Load .env.local so Playwright's global-setup and test processes
+// receive the same Supabase credentials the Next.js dev server uses.
+loadEnv({ path: '.env.local' });
 
 export default defineConfig({
   testDir: './tests/e2e',

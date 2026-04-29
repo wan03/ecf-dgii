@@ -1,0 +1,2 @@
+Número,Fecha Factura,Cliente,NIF/CIF,Dirección Cliente,País Cliente,Plazo de Pago,Fecha Vencimiento,N° Línea,Producto,Descripción Línea,Cantidad,Unidad de Medida,Precio Unitario,Descuento (%),Impuestos,Subtotal,Moneda
+INV/CSV/00001,15/01/2025,"García, S.A.",130123456,"Calle Falsa 123, Santo Domingo",República Dominicana,Contado,15/01/2025,1,Producto de prueba,Línea de prueba,1,Unidades,1000,0,18%,1000,DOP

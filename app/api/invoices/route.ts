@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { listInvoices, ListInvoicesFilters } from '@/lib/db/invoices';
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
