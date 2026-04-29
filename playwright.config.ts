@@ -1,8 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 import { config as loadEnv } from 'dotenv';
 
-// Load .env.local so Playwright's global-setup and test processes
-// receive the same Supabase credentials the Next.js dev server uses.
+// Load .env.local so Playwright's global-setup, auth-setup, and test processes
+// receive the same env vars (Supabase credentials, E2E auth creds, etc.)
 loadEnv({ path: '.env.local' });
 
 export default defineConfig({
@@ -18,9 +18,21 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [
+    // 1. Auth setup — logs in once and saves the session to .auth/user.json.
+    //    Must run before any test that needs authentication.
+    {
+      name: 'setup',
+      testMatch: /auth\.setup\.ts/,
+    },
+
+    // 2. All application tests — start with the saved auth session.
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests/e2e/.auth/user.json',
+      },
+      dependencies: ['setup'],
     },
   ],
   webServer: {
