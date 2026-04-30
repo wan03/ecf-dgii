@@ -25,7 +25,7 @@ import { signXML } from '../ecf/xml-signer';
 import { validateCuadratura } from '../ecf/calculator';
 import { ECF31Data } from '../ecf/types';
 import { DGIIClient } from '../dgii/client';
-import { getCertificate } from '../storage/certificate';
+import { getSigningCredentials } from '../ecf/signing-credentials';
 import { EmailNotifier, EmailConfig } from '../email/notifier';
 
 export interface ProcessError {
@@ -227,10 +227,10 @@ export class InvoiceProcessor {
       });
 
       // Sign XML
-      const certBuffer = await this.getCertificateBuffer(company);
+      const creds = await getSigningCredentials(company);
       const signedXml = await signXML(xmlContent, {
-        p12Buffer: certBuffer,
-        p12Password: process.env.CERT_PASSWORD || '',
+        p12Buffer: creds.buffer,
+        p12Password: creds.password,
       });
 
       await updateInvoiceState(invoiceId, 'firmado', {
@@ -294,10 +294,10 @@ export class InvoiceProcessor {
         await this.processInvoice(invoiceId);
       } else if (invoice.estado === 'xml_generado' && !invoice.xml_firmado) {
         // Sign and send
-        const certBuffer = await this.getCertificateBuffer(company);
+        const creds = await getSigningCredentials(company);
         const signedXml = await signXML(invoice.xml_content || '', {
-          p12Buffer: certBuffer,
-          p12Password: process.env.CERT_PASSWORD || '',
+          p12Buffer: creds.buffer,
+          p12Password: creds.password,
         });
 
         await updateInvoiceState(invoiceId, 'firmado', {
@@ -339,11 +339,12 @@ export class InvoiceProcessor {
     }
 
     try {
+      const creds = await getSigningCredentials(company);
       const dgiiClient = new DGIIClient(
         process.env.DGII_URL_BASE || 'https://ecf.dgii.gov.do/testecf',
         company.rnc,
-        await this.getCertificateBuffer(company),
-        process.env.CERT_PASSWORD || ''
+        creds.buffer,
+        creds.password
       );
 
       const status = await dgiiClient.getStatus(invoice.track_id);
@@ -462,10 +463,10 @@ export class InvoiceProcessor {
       });
 
       // Sign XML
-      const certBuffer = await this.getCertificateBuffer(company);
+      const creds = await getSigningCredentials(company);
       const signedXml = await signXML(xmlContent, {
-        p12Buffer: certBuffer,
-        p12Password: process.env.CERT_PASSWORD || '',
+        p12Buffer: creds.buffer,
+        p12Password: creds.password,
       });
 
       await updateInvoiceState(invoice.id, 'firmado', {
@@ -493,11 +494,12 @@ export class InvoiceProcessor {
    * Private helper: Send to DGII
    */
   private async sendToDGII(invoice: Invoice, signedXml: string, company: CompanyConfig) {
+    const creds = await getSigningCredentials(company);
     const dgiiClient = new DGIIClient(
       process.env.DGII_URL_BASE || 'https://ecf.dgii.gov.do/testecf',
       company.rnc,
-      await this.getCertificateBuffer(company),
-      process.env.CERT_PASSWORD || ''
+      creds.buffer,
+      creds.password
     );
 
     const response = await dgiiClient.sendECF(signedXml);
@@ -515,17 +517,6 @@ export class InvoiceProcessor {
       estado_nuevo: 'enviado',
       detalles: { trackId: response.trackId, estado: response.estado },
     });
-  }
-
-  /**
-   * Private helper: Get certificate from storage
-   */
-  private async getCertificateBuffer(company: CompanyConfig): Promise<Buffer> {
-    if (!company.certificado_path) {
-      throw new Error('Company has no certificate uploaded');
-    }
-
-    return getCertificate(company.certificado_path);
   }
 
   /**
