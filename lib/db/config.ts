@@ -11,6 +11,7 @@ export interface CompanyConfig {
   certificado_path?: string;
   certificado_password_encrypted?: string;
   tipo_ingresos: string;
+  dgii_ambiente?: string;
   created_at: string;
   updated_at: string;
 }
