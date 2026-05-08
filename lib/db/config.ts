@@ -43,9 +43,17 @@ export async function getCompanyConfig(rnc?: string): Promise<CompanyConfig | nu
 
 export async function upsertCompanyConfig(config: Partial<CompanyConfig>): Promise<void> {
   try {
+    // Strip auto-managed fields so the row's existing primary key isn't
+    // re-inserted on update (ON CONFLICT only covers `rnc`, so a stale `id`
+    // would trigger company_config_pkey violations).
+    const { id: _id, created_at: _createdAt, updated_at: _updatedAt, ...rest } = config;
+    void _id;
+    void _createdAt;
+    void _updatedAt;
+
     const { error } = await supabaseAdminClient.from('company_config').upsert(
       {
-        ...config,
+        ...rest,
         updated_at: new Date().toISOString(),
       },
       {
