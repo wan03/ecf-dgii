@@ -165,9 +165,9 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Configuración</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Configuración</h1>
         <p className="text-gray-600 mt-1">Datos de la empresa, certificado digital y secuencias NCF</p>
       </div>
 
@@ -181,7 +181,7 @@ export default function SettingsPage() {
       )}
 
       {/* Company Config */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow p-4 sm:p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-6">Datos de la Empresa (Emisor)</h2>
         <form onSubmit={handleSaveConfig} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -264,11 +264,11 @@ export default function SettingsPage() {
               </select>
             </Field>
           </div>
-          <div className="pt-4 flex justify-end">
+          <div className="pt-4 flex">
             <button
               type="submit"
               disabled={saving}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors font-medium"
+              className="w-full sm:w-auto sm:ml-auto px-6 py-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors font-medium"
             >
               {saving ? 'Guardando...' : 'Guardar Configuración'}
             </button>
@@ -277,7 +277,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Certificate */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow p-4 sm:p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-2">Certificado Digital (.p12)</h2>
         <p className="text-gray-500 text-sm mb-4">
           Certificado emitido por una entidad acreditada por INDOTEL. La contraseña del certificado se configura en la variable de entorno <code className="bg-gray-100 px-1 rounded font-mono">CERT_PASSWORD</code> en Vercel.
@@ -290,20 +290,20 @@ export default function SettingsPage() {
             <span className="text-green-800 text-sm font-medium">Certificado cargado: <span className="font-mono">{config.certificado_path}</span></span>
           </div>
         )}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <input
             type="file"
             accept=".p12,.pfx"
             onChange={e => setCertFile(e.target.files?.[0] || null)}
             data-testid="cert-input"
-            className="block text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            className="block w-full sm:w-auto text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
           {certFile && (
             <button
               onClick={handleCertUpload}
               disabled={uploadingCert}
               data-testid="upload-cert-btn"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors text-sm font-medium"
+              className="w-full sm:w-auto px-4 py-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors text-sm font-medium"
             >
               {uploadingCert ? 'Subiendo...' : 'Subir Certificado'}
             </button>
@@ -315,15 +315,15 @@ export default function SettingsPage() {
       </div>
 
       {/* NCF Sequences */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Secuencias NCF</h2>
             <p className="text-gray-500 text-sm mt-1">Secuencias autorizadas por la DGII para e-CF tipo 31</p>
           </div>
           <button
             onClick={() => setShowNewSeq(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+            className="w-full sm:w-auto px-4 py-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
           >
             + Agregar Secuencia
           </button>
@@ -350,13 +350,13 @@ export default function SettingsPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm" placeholder="Opcional" />
               </Field>
             </div>
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-col sm:flex-row gap-2 pt-2">
               <button type="submit" disabled={savingSeq} data-testid="save-sequence-btn"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 text-sm font-medium">
+                className="w-full sm:w-auto px-4 py-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 text-sm font-medium">
                 {savingSeq ? 'Guardando...' : 'Guardar Secuencia'}
               </button>
               <button type="button" onClick={() => setShowNewSeq(false)}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium">
+                className="w-full sm:w-auto px-4 py-3 sm:py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium">
                 Cancelar
               </button>
             </div>
@@ -383,12 +383,12 @@ export default function SettingsPage() {
                   className={`border rounded-lg p-4 ${expiringSoon ? 'border-yellow-300 bg-yellow-50' : remaining < 100 ? 'border-orange-300 bg-orange-50' : 'border-gray-200 bg-gray-50'}`}
                 >
                   <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                    <div className="space-y-1 min-w-0 w-full">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${seq.estado === 'activo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                           {seq.estado}
                         </span>
-                        <span className="font-mono text-sm font-medium text-gray-900">
+                        <span className="font-mono text-sm font-medium text-gray-900 break-all">
                           {seq.secuencia_actual} → {seq.secuencia_final}
                         </span>
                         {(expiringSoon || remaining < 100) && (
@@ -397,7 +397,7 @@ export default function SettingsPage() {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
                         <span>Vence: <strong className={expiringSoon ? 'text-yellow-700' : ''}>{new Date(seq.fecha_vencimiento).toLocaleDateString('es-DO')} ({daysLeft} días)</strong></span>
                         <span>
                           Disponibles:{' '}
@@ -408,7 +408,7 @@ export default function SettingsPage() {
                             {remaining.toLocaleString()}
                           </strong>
                         </span>
-                        {seq.numero_autorizacion && <span>Auth: <span className="font-mono">{seq.numero_autorizacion}</span></span>}
+                        {seq.numero_autorizacion && <span>Auth: <span className="font-mono break-all">{seq.numero_autorizacion}</span></span>}
                       </div>
                     </div>
                   </div>
@@ -430,7 +430,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Instructions */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6">
         <h2 className="text-lg font-semibold text-blue-900 mb-3">Variables de Entorno Requeridas en Vercel</h2>
         <div className="space-y-2 text-sm font-mono">
           {[
@@ -441,8 +441,8 @@ export default function SettingsPage() {
             ['DGII_URL_BASE', 'URL base DGII (test o prod)'],
             ['DGII_CRON_SECRET', 'Secret para proteger el endpoint cron'],
           ].map(([key, desc]) => (
-            <div key={key} className="flex items-start gap-3">
-              <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs">{key}</span>
+            <div key={key} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3">
+              <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs self-start break-all">{key}</span>
               <span className="text-blue-700 text-xs not-italic font-sans">{desc}</span>
             </div>
           ))}

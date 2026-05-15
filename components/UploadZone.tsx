@@ -68,7 +68,7 @@ export default function UploadZone({ onUpload, isLoading }: Props) {
     <div
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className="border-2 border-dashed border-blue-300 rounded-lg p-12 text-center hover:border-blue-500 transition-colors bg-blue-50"
+      className="border-2 border-dashed border-blue-300 rounded-lg p-6 sm:p-12 text-center hover:border-blue-500 transition-colors bg-blue-50"
     >
       <input
         ref={fileInputRef}
@@ -81,7 +81,7 @@ export default function UploadZone({ onUpload, isLoading }: Props) {
       />
 
       <svg
-        className="w-16 h-16 mx-auto text-blue-400 mb-4"
+        className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-blue-400 mb-4"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -117,7 +117,7 @@ export default function UploadZone({ onUpload, isLoading }: Props) {
         onClick={() => fileInputRef.current?.click()}
         disabled={isLoading}
         data-testid="process-btn"
-        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors font-medium"
+        className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors font-medium min-h-[44px]"
       >
         {isLoading ? 'Procesando...' : 'Seleccionar Archivo'}
       </button>

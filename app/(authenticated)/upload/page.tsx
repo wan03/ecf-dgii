@@ -54,10 +54,10 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Subir Facturas</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Subir Facturas</h1>
         <p className="text-gray-600 mt-2">
           Carga un archivo exportado desde Odoo para procesarlo automáticamente
         </p>
@@ -65,7 +65,7 @@ export default function UploadPage() {
 
       {/* Upload Zone or Results */}
       {!result ? (
-        <div className="bg-white rounded-lg shadow p-8">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-8">
           <UploadZone onUpload={handleUpload} isLoading={loading} />
         </div>
       ) : (
@@ -136,18 +136,18 @@ export default function UploadPage() {
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <button
               onClick={() => {
                 setResult(null);
               }}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Subir Otro Archivo
             </button>
             <button
               onClick={() => router.push('/')}
-              className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
+              className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
             >
               Volver al Dashboard
             </button>

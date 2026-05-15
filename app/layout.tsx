@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
 
@@ -14,9 +14,15 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'Facturación Electrónica e-CF 31 DGII',
-  description: 'Sistema de facturación electrónica conforme a DGII e-CF 31',
+  title: 'Ynovi Comercial — Facturación Electrónica',
+  description: 'Sistema de facturación electrónica de Ynovi Comercial conforme a DGII e-CF 31',
   icons: { icon: '/favicon.ico' },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 /**
