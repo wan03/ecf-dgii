@@ -66,7 +66,7 @@ export default function LoginForm() {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">e-CF DGII</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Ynovi Comercial</h1>
             <p className="text-gray-500 text-sm mt-1">Facturación Electrónica</p>
           </div>
 
@@ -94,7 +94,7 @@ export default function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="usuario@empresa.com"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-colors"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-colors"
               />
             </div>
 
@@ -111,7 +111,7 @@ export default function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-colors"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-colors"
               />
             </div>
 
@@ -120,7 +120,7 @@ export default function LoginForm() {
               type="submit"
               disabled={loading}
               data-testid="login-submit"
-              className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors text-sm"
+              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors text-sm"
             >
               {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
@@ -128,7 +128,7 @@ export default function LoginForm() {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          Sistema de Facturación Electrónica — DGII e-CF 31
+          Sistema de Facturación Electrónica — Ynovi Comercial
         </p>
       </div>
     </div>

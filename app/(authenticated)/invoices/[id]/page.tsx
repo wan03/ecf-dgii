@@ -111,32 +111,32 @@ export default function InvoiceDetailPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <div className="flex items-center gap-3 mb-1">
             <Link href="/" className="text-gray-400 hover:text-gray-600 text-sm">← Dashboard</Link>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900" data-testid="numero-factura">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 break-words" data-testid="numero-factura">
             Factura {invoice.numero_factura}
           </h1>
           {invoice.encf && (
-            <p className="text-gray-500 font-mono mt-1" data-testid="encf">{invoice.encf}</p>
+            <p className="text-gray-500 font-mono mt-1 break-all" data-testid="encf">{invoice.encf}</p>
           )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {canRetry && (
             <button
               onClick={handleRetry}
               disabled={retrying}
               data-testid="retry-btn"
-              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-orange-300 transition-colors font-medium"
+              className="flex-1 sm:flex-initial px-4 py-3 sm:py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-orange-300 transition-colors font-medium"
             >
               {retrying ? 'Reintentando...' : '↻ Reintentar'}
             </button>
           )}
           <button
             onClick={fetchInvoice}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+            className="flex-1 sm:flex-initial px-4 py-3 sm:py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
           >
             Actualizar
           </button>
@@ -144,20 +144,20 @@ export default function InvoiceDetailPage() {
       </div>
 
       {/* Status Banner */}
-      <div className={`rounded-lg p-4 flex items-center justify-between ${
+      <div className={`rounded-lg p-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${
         invoice.estado === 'aceptado' ? 'bg-green-50 border border-green-200' :
         invoice.estado === 'rechazado' || invoice.estado === 'error' ? 'bg-red-50 border border-red-200' :
         invoice.estado === 'enviado' ? 'bg-yellow-50 border border-yellow-200' :
         'bg-gray-50 border border-gray-200'
       }`}>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <InvoiceStatusBadge estado={invoice.estado} />
           {invoice.estado_dgii && (
             <span className="text-gray-600 text-sm">DGII: {invoice.estado_dgii}</span>
           )}
         </div>
         {invoice.track_id && (
-          <span className="text-gray-500 text-xs font-mono">TrackID: {invoice.track_id}</span>
+          <span className="text-gray-500 text-xs font-mono break-all">TrackID: {invoice.track_id}</span>
         )}
       </div>
 
@@ -170,11 +170,11 @@ export default function InvoiceDetailPage() {
       )}
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex gap-6">
+      <div className="border-b border-gray-200 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
+        <nav className="-mb-px flex gap-4 sm:gap-6">
           <button
             onClick={() => setActiveTab('general')}
-            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap min-h-[44px] ${
               activeTab === 'general'
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -185,7 +185,7 @@ export default function InvoiceDetailPage() {
           <button
             onClick={() => setActiveTab('xml')}
             data-testid="tab-xml"
-            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap min-h-[44px] ${
               activeTab === 'xml'
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -199,7 +199,7 @@ export default function InvoiceDetailPage() {
       {activeTab === 'general' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Invoice Info */}
-          <div className="bg-white rounded-lg shadow p-6 space-y-4">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 space-y-4">
             <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">Información del Documento</h2>
             <InfoRow label="Número Odoo" value={invoice.numero_factura} />
             <InfoRow label="e-NCF" value={invoice.encf || '—'} mono />
@@ -215,7 +215,7 @@ export default function InvoiceDetailPage() {
           </div>
 
           {/* Buyer Info */}
-          <div className="bg-white rounded-lg shadow p-6 space-y-4">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 space-y-4">
             <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">Comprador</h2>
             <InfoRow label="RNC / Cédula" value={invoice.numero_cliente || '—'} mono />
             <InfoRow
@@ -227,7 +227,7 @@ export default function InvoiceDetailPage() {
           </div>
 
           {/* Totals */}
-          <div className="bg-white rounded-lg shadow p-6 space-y-4 lg:col-span-2">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 space-y-4 lg:col-span-2">
             <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">Montos</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <AmountCard
@@ -239,14 +239,14 @@ export default function InvoiceDetailPage() {
               <AmountCard label="Base Gravada (16%)" value={invoice.monto_gravado_i2} />
               <AmountCard label="ITBIS 16%" value={invoice.itbis_2} highlight />
             </div>
-            <div className="mt-4 pt-4 border-t flex justify-end">
+            <div className="mt-4 pt-4 border-t flex flex-col gap-3 sm:flex-row sm:justify-end sm:gap-8">
               <div className="text-right">
                 <div className="text-gray-500 text-sm">Total ITBIS</div>
                 <div className="text-xl font-bold text-blue-700">
                   RD$ {((invoice.itbis_1 || 0) + (invoice.itbis_2 || 0)).toFixed(2)}
                 </div>
               </div>
-              <div className="text-right ml-8">
+              <div className="text-right">
                 <div className="text-gray-500 text-sm">Monto Total</div>
                 <div className="text-2xl font-bold text-gray-900" data-testid="total">
                   RD$ {(invoice.total || 0).toFixed(2)}
@@ -256,7 +256,7 @@ export default function InvoiceDetailPage() {
           </div>
 
           {/* Audit Log */}
-          <div className="bg-white rounded-lg shadow p-6 lg:col-span-2">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 lg:col-span-2">
             <h2 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-4">Historial de Estados</h2>
             {auditLog.length === 0 ? (
               <p className="text-gray-500 text-sm">Sin registros de auditoría</p>
@@ -265,14 +265,14 @@ export default function InvoiceDetailPage() {
                 {auditLog.map((entry) => (
                   <div
                     key={entry.id}
-                    className="flex items-start gap-4 text-sm"
+                    className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-4 text-sm"
                     data-testid="audit-entry"
                   >
-                    <div className="text-gray-400 text-xs font-mono whitespace-nowrap pt-0.5 w-36 shrink-0">
+                    <div className="text-gray-400 text-xs font-mono whitespace-nowrap pt-0.5 sm:w-36 sm:shrink-0">
                       {new Date(entry.created_at).toLocaleString('es-DO')}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium text-gray-800">
                           {ACTION_LABELS[entry.action] || entry.action}
                         </span>
@@ -298,8 +298,8 @@ export default function InvoiceDetailPage() {
       )}
 
       {activeTab === 'xml' && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">XML Firmado</h2>
             {invoice.xml_firmado && (
               <button
@@ -313,7 +313,7 @@ export default function InvoiceDetailPage() {
                   URL.revokeObjectURL(url);
                 }}
                 data-testid="download-xml-btn"
-                className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 ↓ Descargar XML
               </button>
@@ -322,7 +322,7 @@ export default function InvoiceDetailPage() {
           {invoice.xml_firmado ? (
             <pre
               data-testid="xml-content"
-              className="bg-gray-900 text-green-300 text-xs p-4 rounded-lg overflow-x-auto overflow-y-auto max-h-[600px] font-mono whitespace-pre-wrap"
+              className="bg-gray-900 text-green-300 text-xs p-4 rounded-lg overflow-x-auto overflow-y-auto max-h-[50vh] sm:max-h-[600px] font-mono whitespace-pre-wrap break-all"
             >
               {formatXML(invoice.xml_firmado)}
             </pre>
@@ -333,7 +333,7 @@ export default function InvoiceDetailPage() {
               </div>
               <pre
                 data-testid="xml-content"
-                className="bg-gray-900 text-yellow-300 text-xs p-4 rounded-lg overflow-x-auto overflow-y-auto max-h-[600px] font-mono whitespace-pre-wrap"
+                className="bg-gray-900 text-yellow-300 text-xs p-4 rounded-lg overflow-x-auto overflow-y-auto max-h-[50vh] sm:max-h-[600px] font-mono whitespace-pre-wrap break-all"
               >
                 {formatXML(invoice.xml_content)}
               </pre>
@@ -361,11 +361,11 @@ function InfoRow({
   testId?: string;
 }) {
   return (
-    <div className="flex justify-between items-start gap-4">
+    <div className="flex flex-wrap justify-between items-start gap-2 sm:gap-4">
       <span className="text-gray-500 text-sm shrink-0">{label}</span>
       <span
         data-testid={testId}
-        className={`text-gray-900 text-sm text-right ${mono ? 'font-mono' : 'font-medium'}`}
+        className={`text-gray-900 text-sm text-right min-w-0 ${mono ? 'font-mono break-all' : 'font-medium break-words'}`}
       >
         {value}
       </span>
@@ -385,11 +385,11 @@ function AmountCard({
   testId?: string;
 }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-4">
+    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
       <div className="text-gray-500 text-xs mb-1">{label}</div>
       <div
         data-testid={testId}
-        className={`text-lg font-bold ${highlight ? 'text-blue-700' : 'text-gray-900'}`}
+        className={`text-base sm:text-lg font-bold break-words ${highlight ? 'text-blue-700' : 'text-gray-900'}`}
       >
         RD$ {(value || 0).toFixed(2)}
       </div>
