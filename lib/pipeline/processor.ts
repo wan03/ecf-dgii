@@ -19,6 +19,8 @@ import {
 } from '../db/sequences';
 import { createInvoiceLines } from '../db/invoiceLines';
 import { parseOdooFile, ParseError } from '../odoo/parser';
+import { OdooApiClient } from '../odoo/api-client';
+import type { OdooInvoice } from '../odoo/types';
 import { mapOdooToECF31 } from '../odoo/mapper';
 import { buildXML } from '../ecf/xml-builder';
 import { signXML } from '../ecf/xml-signer';
@@ -95,63 +97,10 @@ export class InvoiceProcessor {
       }
 
       // Process each invoice
-      for (const odooInvoice of odooInvoices) {
-        try {
-          // Map to ECF31
-          const ecfData = mapOdooToECF31(odooInvoice, company);
-
-          // Create invoice in database
-          const createInput: CreateInvoiceInput = {
-            company_id: this.companyId,
-            numero_factura: odooInvoice.numero,
-            numero_cliente: odooInvoice.nifCif,
-            razon_social_cliente: odooInvoice.cliente,
-            direccion_cliente: odooInvoice.direccionCliente,
-            fecha_emision: odooInvoice.fechaFactura,
-            fecha_vencimiento: odooInvoice.fechaVencimiento,
-            subtotal: ecfData.totales.montoGravadoTotal,
-            monto_gravado_i1: ecfData.totales.montoGravadoI1,
-            monto_gravado_i2: ecfData.totales.montoGravadoI2,
-            monto_gravado_i3: ecfData.totales.montoGravadoI3,
-            itbis_1: ecfData.totales.itbis1,
-            itbis_2: ecfData.totales.itbis2,
-            itbis_3: ecfData.totales.itbis3,
-            total: ecfData.totales.montoTotal,
-            tipo_pago: ecfData.idDoc.tipoPago,
-            tipo_ingresos: ecfData.idDoc.tipoIngresos,
-          };
-
-          const invoice = await createInvoice(createInput);
-          result.processed++;
-          result.successfulInvoices.push(invoice.id);
-
-          // Log creation
-          await appendAuditLog({
-            invoice_id: invoice.id,
-            action: 'created_from_file',
-            estado_nuevo: 'pendiente',
-            detalles: { filename, odooInvoiceNumber: odooInvoice.numero },
-          });
-
-          // Continue with next steps in the pipeline
-          await this.continueProcessing(invoice, company, ecfData);
-        } catch (error) {
-          const errorMsg = String(error);
-          result.errors.push({
-            invoiceNumber: odooInvoice.numero,
-            error: errorMsg,
-            step: 'processing',
-          });
-
-          if (this.emailNotifier) {
-            await this.emailNotifier.sendDGIIError(
-              odooInvoice.numero,
-              'UNKNOWN',
-              errorMsg
-            );
-          }
-        }
-      }
+      await this.processInvoices(odooInvoices, company, result, {
+        action: 'created_from_file',
+        detalles: { filename },
+      });
 
       return result;
     } catch (error) {
@@ -163,6 +112,129 @@ export class InvoiceProcessor {
       });
 
       return result;
+    }
+  }
+
+  /**
+   * Process invoices pulled live from the Ynovi Odoo API for a date range,
+   * instead of from an uploaded file. The downstream pipeline is identical.
+   *
+   * @param dateFrom ISO date (YYYY-MM-DD), inclusive
+   * @param dateTo   ISO date (YYYY-MM-DD), inclusive
+   */
+  async processFromApi(dateFrom: string, dateTo: string): Promise<ProcessResult> {
+    const result: ProcessResult = {
+      processed: 0,
+      errors: [],
+      successfulInvoices: [],
+    };
+
+    try {
+      const company = await getCompanyConfigById(this.companyId);
+      if (!company) {
+        throw new Error('Company configuration not found');
+      }
+
+      // Fetch from the API
+      let odooInvoices;
+      try {
+        const client = OdooApiClient.fromEnv();
+        odooInvoices = await client.getInvoices(dateFrom, dateTo);
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+
+        if (this.emailNotifier) {
+          await this.emailNotifier.sendParseError(`API ${dateFrom}..${dateTo}`, errorMsg);
+        }
+
+        result.errors.push({
+          invoiceNumber: 'API_FETCH_ERROR',
+          error: errorMsg,
+          step: 'fetch',
+        });
+
+        return result;
+      }
+
+      await this.processInvoices(odooInvoices, company, result, {
+        action: 'created_from_api',
+        detalles: { dateFrom, dateTo },
+      });
+
+      return result;
+    } catch (error) {
+      result.errors.push({
+        invoiceNumber: 'UNKNOWN',
+        error: String(error),
+        step: 'general',
+      });
+
+      return result;
+    }
+  }
+
+  /**
+   * Shared per-invoice pipeline used by both the file and API sources: map to ECF31,
+   * persist, audit, then continue through signing/submission.
+   */
+  private async processInvoices(
+    odooInvoices: OdooInvoice[],
+    company: CompanyConfig,
+    result: ProcessResult,
+    audit: { action: string; detalles: Record<string, unknown> }
+  ): Promise<void> {
+    for (const odooInvoice of odooInvoices) {
+      try {
+        // Map to ECF31
+        const ecfData = mapOdooToECF31(odooInvoice, company);
+
+        // Create invoice in database
+        const createInput: CreateInvoiceInput = {
+          company_id: this.companyId,
+          numero_factura: odooInvoice.numero,
+          numero_cliente: odooInvoice.nifCif,
+          razon_social_cliente: odooInvoice.cliente,
+          direccion_cliente: odooInvoice.direccionCliente,
+          fecha_emision: odooInvoice.fechaFactura,
+          fecha_vencimiento: odooInvoice.fechaVencimiento,
+          subtotal: ecfData.totales.montoGravadoTotal,
+          monto_gravado_i1: ecfData.totales.montoGravadoI1,
+          monto_gravado_i2: ecfData.totales.montoGravadoI2,
+          monto_gravado_i3: ecfData.totales.montoGravadoI3,
+          itbis_1: ecfData.totales.itbis1,
+          itbis_2: ecfData.totales.itbis2,
+          itbis_3: ecfData.totales.itbis3,
+          total: ecfData.totales.montoTotal,
+          tipo_pago: ecfData.idDoc.tipoPago,
+          tipo_ingresos: ecfData.idDoc.tipoIngresos,
+        };
+
+        const invoice = await createInvoice(createInput);
+        result.processed++;
+        result.successfulInvoices.push(invoice.id);
+
+        // Log creation
+        await appendAuditLog({
+          invoice_id: invoice.id,
+          action: audit.action,
+          estado_nuevo: 'pendiente',
+          detalles: { ...audit.detalles, odooInvoiceNumber: odooInvoice.numero },
+        });
+
+        // Continue with next steps in the pipeline
+        await this.continueProcessing(invoice, company, ecfData);
+      } catch (error) {
+        const errorMsg = String(error);
+        result.errors.push({
+          invoiceNumber: odooInvoice.numero,
+          error: errorMsg,
+          step: 'processing',
+        });
+
+        if (this.emailNotifier) {
+          await this.emailNotifier.sendDGIIError(odooInvoice.numero, 'UNKNOWN', errorMsg);
+        }
+      }
     }
   }
 
